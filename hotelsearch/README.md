@@ -58,3 +58,53 @@ Content-Type: application/json
     "radius": 10
 }
 ```
+### Example Response
+
+```json
+{
+    "hotels": [
+        {
+            "hotelId": "ae85b885-0e00-420f-9209-3fe433a3c221",
+            "boroughCode": "1",
+            "block": "839",
+            "lot": "1201",
+            "streetNumber": "33",
+            "streetName": "WEST 37TH STREET",
+            "zipcode": 10018,
+            "buildingClass": "RH",
+            "ownerName": "MARRIOTT OWNERSHIP RESORTS, INC.",
+            "borough": "1",
+            "roomRates": {
+                "ONE_PERSON_RATE": 100,
+                "TWO_PERSON_RATE": 130,
+                "FOUR_PERSON_RATE": 240
+            },
+            "latitude": 40.750864,
+            "longitude": -73.98439,
+            "area": "Midtown-Midtown South",
+            "address": "Lot 1201, Block 839\n33, WEST 37TH STREET\n10018"
+        },
+        {
+            "hotelId": "1393a4f1-e2a1-4259-ae2b-a2ebcca99f7f",
+            "boroughCode": "1",
+            "block": "839",
+            "lot": "1202",
+            "streetNumber": "33",
+            "streetName": "WEST 37TH STREET",
+            "zipcode": 10018,
+            "buildingClass": "RH",
+            "ownerName": "MARRIOTT OWNERSHIP RESORTS, INC.",
+            "borough": "1",
+            "roomRates": {
+                "ONE_PERSON_RATE": 120,
+                "TWO_PERSON_RATE": 150,
+                "FOUR_PERSON_RATE": 210
+            },
+            "latitude": 40.750864,
+            "longitude": -73.98439,
+            "area": "Midtown-Midtown South",
+            "address": "Lot 1202, Block 839\n33, WEST 37TH STREET\n10018"
+        }
+    ]
+}
+```

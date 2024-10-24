@@ -1,16 +1,16 @@
 # Travel Aggregator
 
 There are 11 microservices in this repository. Each microservice has its own Java project under its name. They are:
-1. `hotelbookings`
-2. `hotelsearch`
-3. `flightbookings`
-4. `flightsearch`
-5. `experiencebookings`
-6. `experiencesearch`
-7. `carhirebookings`
-8. `carhiresearch`
-9. `expensemanagement`
-10. `tripmanagement`
+1. `carhire_search`
+2. `carhire_tracking`
+3. `expense_management`
+4. `experience_search`
+5. `experience_tracking`
+6. `flight_tracking`
+7. `flightsearch`
+8. `hotel_tracking`
+9. `hotelsearch`
+10. `trip_management`
 11. `userprofile`
 
 
@@ -34,23 +34,25 @@ To set up the local development environment for each service, follow these steps
     ```sh
     cp .env.example .env
     ```
+3. Each service operates with its own database. To ensure proper configuration, follow these steps:
+   1. Create a `.env` file for each service (except for services with names containing 'search').
+   2. Copy the contents of the `.env.example` file located in each service's folder into the corresponding `.env` file.
+   3. Ensure the `.env` files contain the following variables:
 
-3. Ensure the `.env` file contains the following variables:
-
-    ```
-    POSTGRES_DB=your_database_name
-    POSTGRES_USER=your_username
-    POSTGRES_PASSWORD=your_password
-    POSTGRES_PORT=unused_port_on_your_machine
-    ```
+       ```
+       DB_URL=your_database_name
+       POSTGRES_USER=your_username
+       POSTGRES_PASSWORD=your_password
+       ```
 
 ### Step 2: Run the Application
 
-To start the application, execute the following command:
+To start a service, `cd` to its folder and execute the following command:
 
 ```sh
 mvn spring-boot:run
 ```
+You may need to open several terminals to run multiple services simultaneously.
 
 
 ## Installation Steps

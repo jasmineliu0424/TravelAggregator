@@ -28,6 +28,12 @@ To set up the local development environment for each service, follow these steps
 
 ### Step 1: Configure Environment Variables
 
+0. You can run following commands to skip step 1 ~ 3:
+   1. `cd` into the root directory of the project
+   2. `chmod +x copy_env_files.sh`
+   3. `./copy_env_files.sh`
+   
+
 1. Create a `.env` file in the root directory of your project.
 2. Refer to the `.env.example` file for the required environment variables. Copy the contents of `.env.example` into your newly created `.env` file and set the appropriate values.
 

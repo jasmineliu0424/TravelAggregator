@@ -20,7 +20,7 @@ public class CarhireSearchController {
         this.carhireSearchService = carhireSearchService;
     }
 
-    @GetMapping("/search")
+    @PostMapping("/search")
     public Mono<ResponseEntity<JsonNode>> searchCarhires(@RequestBody CarhireSearchCriteria criteria) {
         return carhireSearchService.searchCarhires(criteria)
             .map(response -> ResponseEntity.ok(response));

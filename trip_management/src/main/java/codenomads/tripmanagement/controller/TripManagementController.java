@@ -30,7 +30,8 @@ public class TripManagementController {
     }
 
     @PostMapping
-    public ResponseEntity<Trip> createTrip(@RequestBody CreateTripRequest request, @RequestAttribute("userId") long userId) {
+    public ResponseEntity<Trip> createTrip(@RequestBody CreateTripRequest request) {
+        Long userId = getRequesterId().get();
         logger.info("Received request to create trip: " + request);
         // Check if user is in list of members
         if (request != null && request.getMembers() != null && !request.getMembers().contains(userId)) {

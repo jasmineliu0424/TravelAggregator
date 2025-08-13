@@ -110,7 +110,7 @@ HTTP/1.1 204 No Content
 #### Example Request
 
 ```http
-GET /expenses/?trip_id=1&user_id=1 HTTP/1.1
+GET /expenses/?tripId=1&userId=1 HTTP/1.1
 Host: localhost:18086
 ```
 

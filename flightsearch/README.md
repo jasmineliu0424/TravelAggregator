@@ -5,27 +5,38 @@
 ### Search Flights
 
 ```http
-GET /api/v1/flightsearch/flights HTTP/1.1
+POST /api/v1/flightsearch/flights HTTP/1.1
 Host: localhost:18084
+Content-Type: application/json
 ```
 
-#### Query Parameters
+#### Request Body
 
 | Parameter        | Type   | Required | Description                                 |
 |------------------|--------|----------|---------------------------------------------|
 | departureAirport | string | Yes      | The departure airport, in [IATA code](https://www.iata.org/en/publications/directories/code-search/)                 |
 | arrivalAirport   | string | Yes      | The arrival airport, in [IATA code](https://www.iata.org/en/publications/directories/code-search/)                    |
-| departureDatetime| string | No       | The departure date and time (ISO 8601 format)|
+| departureDatetime| string | No       | The departure date (YYYY-MM-DD format)|
 | airline          | string | No       | The airline carrier, in [IATA code](https://www.iata.org/en/publications/directories/code-search/)                    |
 | maxPrice         | number | No       | The maximum flight price                    |
 | minPrice         | number | No       | The minimum flight price                    |
 | numPassengers    | number | No       | The number of passengers                    |
+| flightId         | string | No       | The specific flight ID to search for       |
 
 #### Example Request
 
 ```http
-GET /api/v1/flightsearch/flights?departureAirport=JFK HTTP/1.1
+POST /api/v1/flightsearch/flights HTTP/1.1
 Host: localhost:18084
+Content-Type: application/json
+
+{
+    "departureAirport": "JFK",
+    "arrivalAirport": "LAX",
+    "departureDatetime": "2024-01-01",
+    "maxPrice": 500,
+    "numPassengers": 2
+}
 ```
 
 #### Example Response

@@ -21,7 +21,7 @@ public class ExperienceSearchController {
         this.experienceSearchService = experienceSearchService;
     }
 
-    @GetMapping("/search")
+    @PostMapping("/search")
     public Mono<ResponseEntity<JsonNode>> searchExperiences(@RequestBody ExperienceSearchCriteria criteria) {
         return experienceSearchService.searchExperiences(criteria)
             .map(response -> ResponseEntity.ok(response));

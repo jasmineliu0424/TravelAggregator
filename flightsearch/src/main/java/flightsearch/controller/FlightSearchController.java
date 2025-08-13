@@ -1,13 +1,10 @@
 package flightsearch.controller;
 
+import flightsearch.dto.FlightSearchCriteria;
 import flightsearch.dto.FlightSearchResponse;
-import flightsearch.model.Flight;
 import flightsearch.service.FlightSearchService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/flightsearch")
@@ -18,10 +15,10 @@ public class FlightSearchController {
         this.flightSearchService = flightSearchService;
     }
 
-    @GetMapping("/flights")
-    public ResponseEntity<FlightSearchResponse> getFlights(@RequestParam Map<String,String> allParams) {
+    @PostMapping("/flights")
+    public ResponseEntity<FlightSearchResponse> searchFlights(@RequestBody FlightSearchCriteria criteria) {
         try {
-            return ResponseEntity.ok(this.flightSearchService.getFlights(allParams));
+            return ResponseEntity.ok(this.flightSearchService.searchFlights(criteria));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }

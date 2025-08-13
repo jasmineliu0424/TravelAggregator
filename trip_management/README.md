@@ -15,7 +15,7 @@
 #### Example Request
 
 ```http
-POST /trips/ HTTP/1.1
+POST /trips HTTP/1.1
 Host: localhost:18087
 Content-Type: application/json
 
@@ -195,7 +195,7 @@ HTTP/1.1 204 No Content
 #### Example Request
 
 ```http
-GET /trips/ HTTP/1.1
+GET /trips HTTP/1.1
 Host: localhost:18087
 Content-Type: application/json  
 ```

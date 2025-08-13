@@ -20,7 +20,7 @@ public class ExperienceSearchGateway {
     }
 
     public Mono<JsonNode> searchExperiences(ExperienceSearchCriteria criteria) {
-        return webClient.method(HttpMethod.GET)
+        return webClient.post()
             .uri("")
             .bodyValue(criteria)
             .retrieve()

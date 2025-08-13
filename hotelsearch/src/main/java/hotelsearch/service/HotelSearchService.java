@@ -23,8 +23,7 @@ public class HotelSearchService {
 
     public HotelsApiSearchResponse getHotels(HotelsApiSearchRequest hotelSearchRequest) {
         try {
-            HotelsApiSearchResponse response = this.hotelsApiGateway.getFromHotelSearchService("", hotelSearchRequest.toJson()).block();
-            return response;
+            return this.hotelsApiGateway.getFromHotelSearchService(hotelSearchRequest).block();
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();

@@ -5,8 +5,8 @@ spring:
       - optional:file:.env[.properties]
   application:
     name: experience-search
-  jackson:
-    property-naming-strategy: SNAKE_CASE
+  # jackson:
+  #   property-naming-strategy: SNAKE_CASE
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration

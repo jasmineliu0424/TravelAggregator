@@ -19,7 +19,7 @@ public class CarhireSearchGateway {
     }
 
     public Mono<JsonNode> searchCarhires(CarhireSearchCriteria criteria) {
-        return webClient.method(HttpMethod.GET)
+        return webClient.post() 
             .uri("")
             .bodyValue(criteria)
             .retrieve()

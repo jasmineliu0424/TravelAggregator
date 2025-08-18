@@ -102,15 +102,15 @@ HTTP/1.1 204 No Content
 
 #### Request Parameters
 
-| Field                  | Type   | Required | Description                                        |
-|------------------------|--------|----------|----------------------------------------------------|
-| trip_id                | number | Yes      | Unique identifier for the trip                     |
-| user_id                | number | Yes      | Unique identifier for the user                     |
+| Field  | Type   | Required | Description                                        |
+|--------|--------|----------|----------------------------------------------------|
+| tripId | number | Yes      | Unique identifier for the trip                     |
+| userId | number | Yes      | Unique identifier for the user                     |
 
 #### Example Request
 
 ```http
-GET /expenses/?trip_id=1&user_id=1 HTTP/1.1
+GET /expenses/?tripId=1&userId=1 HTTP/1.1
 Host: localhost:18086
 ```
 

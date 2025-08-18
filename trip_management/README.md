@@ -5,12 +5,12 @@
 ### Create Trip
 
 #### Request Body
-| Field                  | Type   | Required | Description                                        |
-|------------------------|--------|----------|----------------------------------------------------|
-| tripName               | string | Yes      | Name of the trip                     |
-| startDate              | date   | Yes      | Start date of the trip                        |
-| endDate                | date   | Yes      | End date of the trip                          |
-| members                | array[number]  | Yes      | List of user IDs responsible for the expense       |
+| Field      | Type   | Required | Description                                        |
+|------------|--------|----------|----------------------------------------------------|
+| trip_name  | string | Yes      | Name of the trip                     |
+| start_date | date   | Yes      | Start date of the trip                        |
+| end_date   | date   | Yes      | End date of the trip                          |
+| members    | array[number]  | Yes      | List of user IDs responsible for the expense       |
 
 #### Example Request
 
@@ -20,9 +20,9 @@ Host: localhost:18087
 Content-Type: application/json
 
 {
-    "tripName": "Trip to Paris",
-    "startDate": "2024-07-01",
-    "endDate": "2024-07-05",
+    "trip_name": "Trip to Paris",
+    "start_date": "2024-07-01",
+    "end_date": "2024-07-05",
     "members": [1, 2, 3]
 }
 ```
@@ -144,9 +144,9 @@ Host: localhost:18087
 Content-Type: application/json
 
 {
-    "tripName": "Trip to Paris",
-    "startDate": "2024-07-01",
-    "endDate": "2024-07-05",
+    "trip_name": "Trip to Paris",
+    "start_date": "2024-07-01",
+    "end_date": "2024-07-05",
     "members": [1, 2, 3]
 }   
 ```
@@ -262,10 +262,10 @@ Content-Type: application/json
 
 #### Request Body
 
-| Field                  | Type   | Required | Description                                        |
-|------------------------|--------|----------|----------------------------------------------------|
-| userId                 | number | Yes      | Unique identifier for the user                  |
-| role                 | string | Yes      | Role of the user in the trip                        |
+| Field   | Type   | Required | Description                                        |
+|---------|--------|----------|----------------------------------------------------|
+| user_id | number | Yes      | Unique identifier for the user                  |
+| role    | string | Yes      | Role of the user in the trip                        |
 
 #### Example Request
 
@@ -275,7 +275,7 @@ Host: localhost:18087
 Content-Type: application/json
 
 {
-    "userId": 4,
+    "user_id": 4,
     "role": "MEMBER"
 }   
 ```

@@ -1,6 +1,7 @@
 package codenomads.expensemanagement.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Set;
 
 import codenomads.expensemanagement.domain.Expense;
@@ -25,4 +26,9 @@ public class AddExpenseRequest {
     
     @NotNull(message = "Expense source is required")
     private Expense.ExpenseSource source;
+    
+    @NotNull(message = "Created by user ID is required")
+    private Long createdByUserId;
+    
+    private LocalDate occurredOn;
 }

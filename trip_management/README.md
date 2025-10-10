@@ -10,7 +10,7 @@
 | trip_name  | string | Yes      | Name of the trip                     |
 | start_date | date   | Yes      | Start date of the trip                        |
 | end_date   | date   | Yes      | End date of the trip                          |
-| members    | array[number]  | Yes      | List of user IDs responsible for the expense       |
+| members    | array[number]  | Yes      | List of user IDs that are part of the trip       |
 
 #### Example Request
 

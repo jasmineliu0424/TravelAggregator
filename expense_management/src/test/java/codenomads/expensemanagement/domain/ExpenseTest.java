@@ -52,14 +52,10 @@ class ExpenseTest {
     void expenseSourceAllValuesShouldExist() {
         Expense.ExpenseSource[] sources = Expense.ExpenseSource.values();
         
-        assertEquals(8, sources.length);
+        assertEquals(4, sources.length);
         assertTrue(Set.of(sources).contains(Expense.ExpenseSource.HOTEL));
         assertTrue(Set.of(sources).contains(Expense.ExpenseSource.FLIGHT));
         assertTrue(Set.of(sources).contains(Expense.ExpenseSource.CARHIRE));
-        assertTrue(Set.of(sources).contains(Expense.ExpenseSource.EXPERIENCE));
-        assertTrue(Set.of(sources).contains(Expense.ExpenseSource.DINING));
-        assertTrue(Set.of(sources).contains(Expense.ExpenseSource.TRANSPORT));
-        assertTrue(Set.of(sources).contains(Expense.ExpenseSource.NIGHTLIFE));
         assertTrue(Set.of(sources).contains(Expense.ExpenseSource.OTHER));
     }
 

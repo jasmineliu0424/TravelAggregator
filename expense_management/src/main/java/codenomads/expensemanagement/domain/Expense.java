@@ -57,10 +57,6 @@ public class Expense {
         HOTEL,
         FLIGHT,
         CARHIRE,
-        EXPERIENCE,
-        DINING,
-        TRANSPORT,
-        NIGHTLIFE,
         OTHER
     }
 }

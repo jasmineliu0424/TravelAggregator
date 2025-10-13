@@ -11,7 +11,7 @@
 | amount                 | number | Yes      | Total amount for the expense                        |
 | description            | string | No       | Description of the expense                          |
 | responsible_user_ids   | array[number]  | Yes      | List of user IDs responsible for the expense       |
-| source                 | string | Yes      | Source of the expense (HOTEL, FLIGHT, CARHIRE, EXPERIENCE, DINING, TRANSPORT, NIGHTLIFE, OTHER) |
+| source                 | string | Yes      | Source of the expense (HOTEL, FLIGHT, CARHIRE, OTHER) |
 | created_by_user_id     | number | Yes      | User ID of who created/paid for the expense        |
 | occurred_on            | string | No       | Date when expense occurred (YYYY-MM-DD, defaults to today) |
 
@@ -230,8 +230,4 @@ The following expense sources are supported:
 - **HOTEL**: Accommodation expenses
 - **FLIGHT**: Flight and airfare costs  
 - **CARHIRE**: Car rental expenses
-- **EXPERIENCE**: Activities, tours, and experiences
-- **DINING**: Restaurant and food expenses
-- **TRANSPORT**: Local transportation (taxi, train, bus, etc.)
-- **NIGHTLIFE**: Entertainment and nightlife expenses
 - **OTHER**: Miscellaneous expenses not covered by other categories

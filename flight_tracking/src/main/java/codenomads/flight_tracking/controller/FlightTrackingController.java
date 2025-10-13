@@ -22,7 +22,7 @@ public class FlightTrackingController {
         this.flightTrackingService = flightTrackingService;
     }
 
-    @GetMapping("/")
+    @GetMapping({"", "/"})
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("Flight tracking service is up and running");
     }

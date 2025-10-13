@@ -1,7 +1,6 @@
 package codenomads.hotel_tracking.gateway;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +24,10 @@ public class ExpenseGateway {
     }
 
     public Long createExpense(BigDecimal amount, Long tripId, Set<Long> responsibleUserIds) {
-        ExpenseRequest request = new ExpenseRequest(amount, tripId, responsibleUserIds);
+        Long createdByUserId = (Long) RequestContextHolder.getRequestAttributes()
+            .getAttribute("userid", RequestAttributes.SCOPE_REQUEST);
+        
+        ExpenseRequest request = new ExpenseRequest(amount, tripId, responsibleUserIds, createdByUserId);
 
         String token = (String) RequestContextHolder.getRequestAttributes()
             .getAttribute("jwt", RequestAttributes.SCOPE_REQUEST);
@@ -48,11 +50,13 @@ public class ExpenseGateway {
         private Long tripId;
         private Set<Long> responsibleUserIds;
         private String source = "HOTEL";
+        private Long createdByUserId;
 
-        public ExpenseRequest(BigDecimal amount, Long tripId, Set<Long> responsibleUserIds) {
+        public ExpenseRequest(BigDecimal amount, Long tripId, Set<Long> responsibleUserIds, Long createdByUserId) {
             this.amount = amount;
             this.tripId = tripId;
             this.responsibleUserIds = responsibleUserIds;
+            this.createdByUserId = createdByUserId;
         }
     }
 

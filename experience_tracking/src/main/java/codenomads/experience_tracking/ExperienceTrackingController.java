@@ -19,12 +19,12 @@ public class ExperienceTrackingController {
         this.experienceTrackingService = experienceTrackingService;
     }
 
-    @GetMapping("/")
+    @GetMapping({"", "/"})
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("Experience tracking service is up and running");
     }
     
-    @PostMapping("/")
+    @PostMapping({"", "/"})
     public ResponseEntity<String> receiveExperienceBooking(@RequestBody ExperienceBookingDTO dto) {
         experienceTrackingService.saveExperienceBooking(dto);
         return ResponseEntity.ok("Experience booking received");

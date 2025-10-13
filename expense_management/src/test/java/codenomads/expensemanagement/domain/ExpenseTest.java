@@ -56,7 +56,7 @@ class ExpenseTest {
         assertTrue(Set.of(sources).contains(Expense.ExpenseSource.HOTEL));
         assertTrue(Set.of(sources).contains(Expense.ExpenseSource.FLIGHT));
         assertTrue(Set.of(sources).contains(Expense.ExpenseSource.CARHIRE));
-        assertTrue(Set.of(sources).contains(Expense.ExpenseSource.OTHER));
+        assertTrue(Set.of(sources).contains(Expense.ExpenseSource.EXPERIENCE));
     }
 
     @Test

@@ -10,7 +10,6 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embeddable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -57,6 +56,6 @@ public class Expense {
         HOTEL,
         FLIGHT,
         CARHIRE,
-        OTHER
+        EXPERIENCE
     }
 }

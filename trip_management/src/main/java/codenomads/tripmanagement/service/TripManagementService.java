@@ -10,8 +10,10 @@ import codenomads.tripmanagement.dto.CreateTripRequest;
 import codenomads.tripmanagement.domain.BookingSource;
 import codenomads.tripmanagement.repository.TripRepository;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class TripManagementService {
@@ -27,7 +29,7 @@ public class TripManagementService {
     public Trip createTrip(CreateTripRequest request, Long creatorId) {
         // --- date guard (reject inconsistent dates) ---
         if (request.getStartDate() != null && request.getEndDate() != null
-                && request.getStartDate().isAfter(request.getEndDate())) {
+                && request.getStartDate().after(request.getEndDate())) {
             throw new IllegalArgumentException("startDate must not be after endDate");
         }
         
@@ -105,7 +107,7 @@ public class TripManagementService {
         if (optionalTrip.isPresent()) {
             // --- date guard (reject inconsistent dates) ---
             if (updatedTrip.getStartDate() != null && updatedTrip.getEndDate() != null
-                    && updatedTrip.getStartDate().isAfter(updatedTrip.getEndDate())) {
+                    && updatedTrip.getStartDate().after(updatedTrip.getEndDate())) {
                 throw new IllegalArgumentException("startDate must not be after endDate");
             }
 

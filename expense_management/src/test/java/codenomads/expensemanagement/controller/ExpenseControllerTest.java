@@ -11,9 +11,13 @@ import org.springframework.http.ResponseEntity;
 
 import codenomads.expensemanagement.domain.Expense;
 import codenomads.expensemanagement.dto.AddExpenseRequest;
+import codenomads.expensemanagement.dto.UserExpenseSummary;
+import codenomads.expensemanagement.dto.BalanceSheet;
 import codenomads.expensemanagement.service.ExpenseService;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -90,6 +94,45 @@ class ExpenseControllerTest {
             () -> expenseController.updateExpense(999L, updateRequest));
 
         verify(expenseService, times(1)).updateExpense(999L, updateRequest.getAmount());
+    }
+
+    @Test
+    void getUserSummaryShouldReturnSummary() {
+        Long tripId = 1L;
+        Long userId = 1L;
+        LocalDate fromDate = LocalDate.of(2025, 1, 1);
+        LocalDate toDate = LocalDate.of(2025, 1, 31);
+        
+        UserExpenseSummary mockSummary = new UserExpenseSummary(
+            new BigDecimal("100.00"),
+            new BigDecimal("50.00"),
+            new BigDecimal("50.00"),
+            Map.of(Expense.ExpenseSource.HOTEL, new BigDecimal("50.00"))
+        );
+        
+        when(expenseService.getUserSummary(tripId, userId, fromDate, toDate)).thenReturn(mockSummary);
+
+        ResponseEntity<UserExpenseSummary> response = expenseController.getUserSummary(tripId, userId, fromDate, toDate);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(mockSummary, response.getBody());
+        verify(expenseService, times(1)).getUserSummary(tripId, userId, fromDate, toDate);
+    }
+
+    @Test
+    void getBalanceSheetShouldReturnBalanceSheet() {
+        Long tripId = 1L;
+        BalanceSheet mockBalanceSheet = new BalanceSheet(Map.of(1L, new BigDecimal("50.00")));
+        
+        when(expenseService.getBalanceSheet(tripId)).thenReturn(mockBalanceSheet);
+
+        ResponseEntity<BalanceSheet> response = expenseController.getBalanceSheet(tripId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(mockBalanceSheet, response.getBody());
+        verify(expenseService, times(1)).getBalanceSheet(tripId);
     }
 
     private AddExpenseRequest createTestRequest() {

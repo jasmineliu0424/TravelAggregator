@@ -9,11 +9,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import codenomads.expensemanagement.domain.Expense;
 import codenomads.expensemanagement.dto.AddExpenseRequest;
+import codenomads.expensemanagement.dto.UserExpenseSummary;
+import codenomads.expensemanagement.dto.BalanceSheet;
 import codenomads.expensemanagement.gateway.TripGateway;
 import codenomads.expensemanagement.repository.ExpenseRepository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -85,6 +88,58 @@ class ExpenseServiceTest {
         verify(expenseRepository, never()).save(any(Expense.class));
     }
 
+    @Test
+    void getUserSummaryValidParametersShouldReturnSummary() {
+        Long tripId = 1L;
+        Long userId = 1L;
+        LocalDate fromDate = LocalDate.of(2025, 1, 1);
+        LocalDate toDate = LocalDate.of(2025, 1, 31);
+        
+        Expense expense1 = createExpenseWithDetails(1L, new BigDecimal("100.00"), userId, Set.of(userId, 2L), Expense.ExpenseSource.HOTEL, fromDate);
+        List<Expense> expenses = List.of(expense1);
+        
+        when(expenseRepository.findByTripIdAndOccurredOnBetween(tripId, fromDate, toDate)).thenReturn(expenses);
+
+        UserExpenseSummary result = expenseService.getUserSummary(tripId, userId, fromDate, toDate);
+
+        assertNotNull(result);
+        assertEquals(new BigDecimal("100.00"), result.paidByUser());
+        assertEquals(new BigDecimal("50.00"), result.shareOfUser());
+        assertEquals(new BigDecimal("50.00"), result.net());
+        verify(expenseRepository, times(1)).findByTripIdAndOccurredOnBetween(tripId, fromDate, toDate);
+    }
+
+    @Test
+    void getUserSummaryNullParametersShouldThrowException() {
+        assertThrows(IllegalArgumentException.class,
+            () -> expenseService.getUserSummary(null, 1L, LocalDate.now(), LocalDate.now().plusDays(1)));
+        
+        assertThrows(IllegalArgumentException.class,
+            () -> expenseService.getUserSummary(1L, null, LocalDate.now(), LocalDate.now().plusDays(1)));
+    }
+
+    @Test
+    void getBalanceSheetValidTripIdShouldReturnBalanceSheet() {
+        Long tripId = 1L;
+        Expense expense1 = createExpenseWithDetails(1L, new BigDecimal("100.00"), 1L, Set.of(1L, 2L), Expense.ExpenseSource.HOTEL, LocalDate.now());
+        List<Expense> expenses = List.of(expense1);
+        
+        when(expenseRepository.findByTripId(tripId)).thenReturn(expenses);
+
+        BalanceSheet result = expenseService.getBalanceSheet(tripId);
+
+        assertNotNull(result);
+        assertNotNull(result.netByUser());
+        assertTrue(result.netByUser().containsKey(1L));
+        verify(expenseRepository, times(1)).findByTripId(tripId);
+    }
+
+    @Test
+    void getBalanceSheetNullTripIdShouldThrowException() {
+        assertThrows(IllegalArgumentException.class,
+            () -> expenseService.getBalanceSheet(null));
+    }
+
     private AddExpenseRequest createTestRequest() {
         AddExpenseRequest request = new AddExpenseRequest();
         request.setTripId(1L);
@@ -114,6 +169,19 @@ class ExpenseServiceTest {
         expense.setDescription("Test expense");
         expense.setResponsibleUserIds(userIds);
         expense.setSource(Expense.ExpenseSource.HOTEL);
+        return expense;
+    }
+
+    private Expense createExpenseWithDetails(Long id, BigDecimal amount, Long createdBy, Set<Long> responsibleUsers, Expense.ExpenseSource source, LocalDate occurredOn) {
+        Expense expense = new Expense();
+        expense.setId(id);
+        expense.setTripId(1L);
+        expense.setAmount(amount);
+        expense.setDescription("Test expense");
+        expense.setCreatedByUserId(createdBy);
+        expense.setResponsibleUserIds(responsibleUsers);
+        expense.setSource(source);
+        expense.setOccurredOn(occurredOn);
         return expense;
     }
 }

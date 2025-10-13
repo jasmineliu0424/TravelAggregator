@@ -1,4 +1,4 @@
-package codenomads.experience_tracking;
+package codenomads.experience_tracking.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

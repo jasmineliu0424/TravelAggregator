@@ -36,6 +36,9 @@ public class ExpenseGateway {
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
             .bodyValue(request)
             .retrieve()
+            .onStatus(status -> status.is4xxClientError(), clientResponse ->
+                clientResponse.bodyToMono(String.class)
+                    .map(body -> new RuntimeException("Bad request to expense service: " + body)))
             .bodyToMono(ExpenseResponse.class)
             .block();
 

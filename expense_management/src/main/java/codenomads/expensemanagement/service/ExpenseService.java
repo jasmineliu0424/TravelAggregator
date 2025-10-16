@@ -70,6 +70,9 @@ public class ExpenseService {
     }
 
     public BigDecimal queryExpensesForUserInTrip(Long tripId, Long userId) {
+        if (tripId == null || userId == null) {
+          throw new IllegalArgumentException("tripId and userId are required");
+        }
         // Fetch all expenses for the given trip
         List<Expense> expenses = expenseRepository.findByTripId(tripId);
 

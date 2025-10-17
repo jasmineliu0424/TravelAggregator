@@ -51,15 +51,21 @@ public class TripManagementService {
 
     @Transactional
     public Optional<Trip> addBookingToTrip(Long tripId, Long bookingId, BookingSource source) {
-        Optional<Trip> optionalTrip = tripRepository.findById(tripId);
-        optionalTrip.ifPresent(trip -> {
+        // Idempotency: dedupe on (bookingId, source)
+        boolean exists = trip.getBookings().stream().anyMatch(b ->
+            Objects.equals(bookingId, b.getBookingId()) &&
+            b.getSource() == source // enum compare: use ==
+        );
+
+        if (!exists) {
             Trip.Booking booking = new Trip.Booking();
             booking.setBookingId(bookingId);
             booking.setSource(source);
             trip.getBookings().add(booking);
             tripRepository.save(trip);
-        });
-        return optionalTrip;
+        }
+
+        return trip;
     }
 
     @Transactional

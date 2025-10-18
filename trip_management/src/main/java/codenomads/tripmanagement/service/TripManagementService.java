@@ -64,6 +64,9 @@ public class TripManagementService {
     @Transactional
     public Optional<Trip> addBookingToTrip(Long tripId, Long bookingId, BookingSource source) {
         return tripRepository.findById(tripId).map(trip -> {
+            if (bookingId == null || source == null) {
+                throw new IllegalArgumentException("bookingId and source are required");
+            }
             // Idempotency: dedupe on (bookingId, source)
             boolean exists = trip.getBookings().stream().anyMatch(b ->
                 Objects.equals(bookingId, b.getBookingId()) &&

@@ -1,5 +1,6 @@
 package codenomads.tripmanagement.service;
 
+import codenomads.tripmanagement.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,11 +10,10 @@ import codenomads.tripmanagement.domain.TripMember;
 import codenomads.tripmanagement.dto.CreateTripRequest;
 import codenomads.tripmanagement.domain.BookingSource;
 import codenomads.tripmanagement.repository.TripRepository;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class TripManagementService {
@@ -67,6 +67,10 @@ public class TripManagementService {
             if (bookingId == null || source == null) {
                 throw new IllegalArgumentException("bookingId and source are required");
             }
+
+            // Only the creator of a trip can make changes to a trip
+            checkUserCreatorOfTrip(tripId);
+
             // Idempotency: dedupe on (bookingId, source)
             boolean exists = trip.getBookings().stream().anyMatch(b ->
                 Objects.equals(bookingId, b.getBookingId()) &&
@@ -87,6 +91,9 @@ public class TripManagementService {
     //if the member already exists, no duplicate is added.
     @Transactional
     public Optional<Trip> addMemberToTrip(Long tripId, Long userId, TripMember.Role role) {
+        // Only the creator of a trip can make changes to a trip
+        checkUserCreatorOfTrip(tripId);
+
         Optional<Trip> optionalTrip = tripRepository.findById(tripId);
         optionalTrip.ifPresent(trip -> {
             boolean exists = trip.getMembers().stream()
@@ -104,6 +111,9 @@ public class TripManagementService {
 
     @Transactional
     public Optional<Trip> removeMemberFromTrip(Long tripId, Long userId) {
+        // Only the creator of a trip can make changes to a trip
+        checkUserCreatorOfTrip(tripId);
+
         Optional<Trip> optionalTrip = tripRepository.findById(tripId);
         optionalTrip.ifPresent(trip -> {
             if (trip.getCreatorId() != null && trip.getCreatorId().equals(userId)) {
@@ -118,6 +128,9 @@ public class TripManagementService {
 
     @Transactional
     public Trip updateTrip(Long tripId, Trip updatedTrip) {
+        // Only the creator of a trip can make changes to a trip
+        checkUserCreatorOfTrip(tripId);
+
         Optional<Trip> optionalTrip = tripRepository.findById(tripId);
         if (optionalTrip.isPresent()) {
             // --- date guard (reject inconsistent dates) ---
@@ -140,6 +153,9 @@ public class TripManagementService {
 
     @Transactional
     public void removeTrip(Long tripId) {
+        // Only the creator of a trip can make changes to a trip
+        checkUserCreatorOfTrip(tripId);
+
         tripRepository.deleteById(tripId);
     }
 
@@ -155,8 +171,17 @@ public class TripManagementService {
         return tripRepository.existsByIdAndMembersUserId(tripId, userId);
     }
 
-    public boolean isUserCreator(Long tripId, Long userId) {
-        Optional<Trip> tripOpt = tripRepository.findById(tripId);
-        return tripOpt.map(trip -> trip.getCreatorId().equals(userId)).orElse(false);
+    // Only the creator of trip can edit a trip
+    private void checkUserCreatorOfTrip(Long tripId) {
+        // Retrieve userid from request attribute
+        Optional<Long> userId = Optional.ofNullable((Long) RequestContextHolder.getRequestAttributes()
+                .getAttribute("userid", RequestAttributes.SCOPE_REQUEST));
+        Optional<Trip> currentTrip = this.queryTripById(tripId);
+        if (currentTrip.isEmpty()) {
+            throw new CustomException("Trip not found", 404);
+        }
+        if (userId.isEmpty() || !userId.get().equals(currentTrip.get().getCreatorId())) {
+            throw new CustomException("Only creator can modify trip", 404);
+        }
     }
 }

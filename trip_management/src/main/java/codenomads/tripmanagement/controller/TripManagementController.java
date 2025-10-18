@@ -6,6 +6,7 @@ import codenomads.tripmanagement.dto.AddTripMemberRequest;
 import codenomads.tripmanagement.dto.CreateTripRequest;
 import codenomads.tripmanagement.exception.CustomException;
 import codenomads.tripmanagement.service.TripManagementService;
+import jakarta.validation.Valid;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class TripManagementController {
     }
 
     @PostMapping
-    public ResponseEntity<Trip> createTrip(@RequestBody CreateTripRequest request) {
+    public ResponseEntity<Trip> createTrip(@Valid @RequestBody CreateTripRequest request) {
         Long userId = getRequesterId().get();
         logger.info("Received request to create trip: " + request);
         // Check if user is in list of members
@@ -44,7 +45,7 @@ public class TripManagementController {
     @PostMapping("/{tripId}/bookings")
     public ResponseEntity<Trip> addBookingToTrip(
             @PathVariable Long tripId,
-            @RequestBody TripBookingRequest request) {
+            @Valid @RequestBody TripBookingRequest request) {
         logger.info("Received request to add booking to trip: " + request);
         Optional<Long> requesterId = getRequesterId();
         if (!tripService.isUserInTrip(tripId, requesterId.get())) {
@@ -57,10 +58,8 @@ public class TripManagementController {
     @PutMapping("/{tripId}")
     public ResponseEntity<Trip> updateTrip(
             @PathVariable Long tripId,
-            @RequestBody Trip updatedTrip) {
+            @Valid @RequestBody Trip updatedTrip) {
         logger.info("Received request to update trip: " + updatedTrip);
-        // Check if user is in list of members
-        checkUserCreatorOfTrip(tripId);
         Trip trip = tripService.updateTrip(tripId, updatedTrip);
         return trip != null ? ResponseEntity.ok(trip) : ResponseEntity.notFound().build();
     }
@@ -68,8 +67,6 @@ public class TripManagementController {
     @DeleteMapping("/{tripId}")
     public ResponseEntity<Void> deleteTrip(@PathVariable Long tripId) {
         logger.info("Received request to delete trip with id: " + tripId);
-        // Check if user is in list of members
-        checkUserCreatorOfTrip(tripId);
         tripService.removeTrip(tripId);
         return ResponseEntity.noContent().build();
     }
@@ -97,11 +94,8 @@ public class TripManagementController {
     @PostMapping("/{tripId}/members")
     public ResponseEntity<Trip> addMemberToTrip(
             @PathVariable Long tripId,
-            @RequestBody AddTripMemberRequest request) {
+            @Valid @RequestBody AddTripMemberRequest request) {
         logger.info("Received request to add member to trip: " + request);
-        // TODO: double check by Simeng
-        // Check if user is in list of members
-        checkUserCreatorOfTrip(tripId);
         Optional<Trip> optionalTrip = tripService.addMemberToTrip(tripId, request.getUserId(), request.getRole());
         return optionalTrip.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -112,8 +106,6 @@ public class TripManagementController {
             @PathVariable Long userId) {
         logger.info("Received request to remove member from trip: " + userId);
         // TODO: double check by Simeng
-        // Check if user is in list of members
-        checkUserCreatorOfTrip(tripId);
         Optional<Trip> optionalTrip = tripService.removeMemberFromTrip(tripId, userId);
         return optionalTrip.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -148,19 +140,5 @@ public class TripManagementController {
     public static class TripBookingRequest {
         private Long bookingId;
         private BookingSource source;
-    }
-
-    // Only creator can edit trip
-    private void checkUserCreatorOfTrip(Long tripId) {
-        // Retrieve userid from request attribute
-        Optional<Long> userId = Optional.ofNullable((Long) RequestContextHolder.getRequestAttributes()
-            .getAttribute("userid", RequestAttributes.SCOPE_REQUEST));
-        Optional<Trip> currentTrip = tripService.queryTripById(tripId);
-        if (!currentTrip.isPresent()) {
-            throw new CustomException("Trip not found", 404);
-        }
-        if (!userId.isPresent() || !userId.get().equals(currentTrip.get().getCreatorId())) {
-            throw new CustomException("Only creator can modify trip", 404);
-        }
     }
 }

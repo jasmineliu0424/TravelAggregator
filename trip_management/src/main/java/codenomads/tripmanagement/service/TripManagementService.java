@@ -106,6 +106,10 @@ public class TripManagementService {
     public Optional<Trip> removeMemberFromTrip(Long tripId, Long userId) {
         Optional<Trip> optionalTrip = tripRepository.findById(tripId);
         optionalTrip.ifPresent(trip -> {
+            if (trip.getCreatorId() != null && trip.getCreatorId().equals(userId)) {
+                throw new IllegalArgumentException("Cannot remove the creator from the trip");
+            }
+
             trip.removeMember(userId);
             tripRepository.save(trip);
         });

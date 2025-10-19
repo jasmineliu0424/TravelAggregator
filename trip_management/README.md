@@ -10,7 +10,7 @@
 | trip_name  | string | Yes      | Name of the trip                     |
 | start_date | date   | Yes      | Start date of the trip                        |
 | end_date   | date   | Yes      | End date of the trip                          |
-| members    | array[number]  | Yes      | List of user IDs responsible for the expense       |
+| members    | array[number]  | Yes      | List of user IDs that are part of the trip       |
 
 #### Example Request
 
@@ -35,9 +35,9 @@ Content-Type: application/json
 
 {
     "id": 2,
-    "trip_name": null,
-    "start_date": null,
-    "end_date": null,
+    "trip_name": "Trip to Paris",
+    "start_date": "2024-07-01",
+    "end_date": "2024-07-05",
     "creator_id": 0,
     "bookings": [],
     "members": [
@@ -84,7 +84,7 @@ Host: localhost:18087
 Content-Type: application/json
 
 {
-    "bookingId": 1,
+    "booking_id": 1,
     "source": "HOTEL"
 }
 ```
@@ -97,9 +97,9 @@ Content-Type: application/json
 
 {
     "id": 2,
-    "trip_name": null,
-    "start_date": null,
-    "end_date": null,
+    "trip_name": "Trip to Paris",
+    "start_date": "2024-07-01",
+    "end_date": "2024-07-05",
     "creator_id": 0,
     "bookings": [
         {

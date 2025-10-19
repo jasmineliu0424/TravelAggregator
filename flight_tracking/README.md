@@ -19,13 +19,15 @@ Content-Type: application/json
 | data.distancemiles       | number  | No      | Distance of the flight in miles                   |
 | data.totalseats          | number  | No      | Total number of seats available                    |
 | data.availableseats      | number  | No      | Number of available seats                           |
-| data.aircraft            | string  | No      | Type of aircraft                                   |
+| data.aircraft            | string  | Yes     | Type of aircraft                                   |
 | data.airtime             | number  | No      | Total airtime in minutes                           |
 | data.departure_datetime   | string  | No      | Departure date and time (ISO 8601 format)        |
 | data.flight_price        | number  | No      | Price of the flight                                |
 | amount_paid              | number  | No       | Total amount paid for the booking                  |
-| trip_id                  | number  | No*      | Unique identifier for the trip                     |
-| responsible_user_ids     | array   | No*      | List of user IDs responsible for the booking       |
+| trip_id                  | number  | Yes*     | Unique identifier for the trip                     |
+| responsible_user_ids     | array   | Yes*     | List of user IDs responsible for the booking       |
+
+*Note: `trip_id` and `responsible_user_ids` are required if amount_paid is provided.
 
 #### Example Request
 

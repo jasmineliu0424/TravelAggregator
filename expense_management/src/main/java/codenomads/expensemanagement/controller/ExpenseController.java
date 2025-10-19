@@ -1,6 +1,7 @@
 package codenomads.expensemanagement.controller;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import codenomads.expensemanagement.domain.Expense;
 import codenomads.expensemanagement.dto.AddExpenseRequest;
+import codenomads.expensemanagement.dto.UserExpenseSummary;
+import codenomads.expensemanagement.dto.BalanceSheet;
 import codenomads.expensemanagement.service.ExpenseService;
 import jakarta.validation.Valid;
 import lombok.Data;
@@ -54,6 +57,22 @@ public class ExpenseController {
     public ResponseEntity<BigDecimal> queryExpensesForUserInTrip(@RequestParam Long tripId, @RequestParam Long userId) {
         BigDecimal expenses = expenseService.queryExpensesForUserInTrip(tripId, userId);
         return ResponseEntity.ok(expenses);
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<UserExpenseSummary> getUserSummary(
+            @RequestParam Long tripId,
+            @RequestParam Long userId,
+            @RequestParam LocalDate fromInclusive,
+            @RequestParam LocalDate toExclusive) {
+        UserExpenseSummary summary = expenseService.getUserSummary(tripId, userId, fromInclusive, toExclusive);
+        return ResponseEntity.ok(summary);
+    }
+
+    @GetMapping("/balance-sheet")
+    public ResponseEntity<BalanceSheet> getBalanceSheet(@RequestParam Long tripId) {
+        BalanceSheet balanceSheet = expenseService.getBalanceSheet(tripId);
+        return ResponseEntity.ok(balanceSheet);
     }
 
     // Inner class to represent request payload

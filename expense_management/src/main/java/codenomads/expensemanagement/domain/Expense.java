@@ -10,9 +10,9 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embeddable;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,6 +44,13 @@ public class Expense {
     @Column(nullable = false)
     @ColumnDefault("0")
     private Long tripId;
+
+    @NotNull
+    @Column(nullable = false)
+    private Long createdByUserId;
+
+    @Column(nullable = false)
+    private LocalDate occurredOn;
 
     public enum ExpenseSource {
         HOTEL,

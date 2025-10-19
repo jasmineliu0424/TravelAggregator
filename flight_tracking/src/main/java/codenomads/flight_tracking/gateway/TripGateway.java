@@ -45,7 +45,7 @@ public class TripGateway {
 
         public TripBookingRequest(Long bookingId) {
             this.bookingId = bookingId;
-            this.source = "CARHIRE";
+            this.source = "FLIGHT";
         }
     }
 }

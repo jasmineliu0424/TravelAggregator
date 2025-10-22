@@ -32,6 +32,10 @@ public class TripManagementService {
                 && request.getStartDate().after(request.getEndDate())) {
             throw new IllegalArgumentException("startDate must not be after endDate");
         }
+
+        if (request.getTripName() == null || request.getTripName().trim().isEmpty()) {
+            throw new IllegalArgumentException("tripName must be non-blank");
+        }
         
         Trip trip = new Trip();
         trip.setTripName(request.getTripName());

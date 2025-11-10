@@ -1,0 +1,459 @@
+version: '3.8'
+
+networks:
+  internal:
+    driver: bridge
+  public:
+    driver: bridge
+  postgres_network:
+    external: true
+    name: "ny-travel-network"
+    ipam:
+      config:
+        - subnet: "172.16.238.0/24"
+
+volumes:
+  pg_trip_management_data: {}
+  pg_hotel_tracking_data: {}
+  pg_flight_tracking_data: {}
+  pg_experience_tracking_data: {}
+  pg_carhire_tracking_data: {}
+  pg_expense_management_data: {}
+  pg_userprofile_data: {}
+
+secrets:
+  jwt_key_trip_management:
+    file: ./docker/secrets/jwt_key_trip_management
+  jwt_key_hotel_tracking:
+    file: ./docker/secrets/jwt_key_hotel_tracking
+  jwt_key_flight_tracking:
+    file: ./docker/secrets/jwt_key_flight_tracking
+  jwt_key_experience_tracking:
+    file: ./docker/secrets/jwt_key_experience_tracking
+  jwt_key_carhire_tracking:
+    file: ./docker/secrets/jwt_key_carhire_tracking
+  jwt_key_expense_management:
+    file: ./docker/secrets/jwt_key_expense_management
+  jwt_key_userprofile:
+    file: ./docker/secrets/jwt_key_userprofile
+  # DB passwords as secrets
+  pg_pwd_trip_management:
+    file: ./docker/secrets/pg_pwd_trip_management
+  pg_pwd_hotel_tracking:
+    file: ./docker/secrets/pg_pwd_hotel_tracking
+  pg_pwd_flight_tracking:
+    file: ./docker/secrets/pg_pwd_flight_tracking
+  pg_pwd_experience_tracking:
+    file: ./docker/secrets/pg_pwd_experience_tracking
+  pg_pwd_carhire_tracking:
+    file: ./docker/secrets/pg_pwd_carhire_tracking
+  pg_pwd_expense_management:
+    file: ./docker/secrets/pg_pwd_expense_management
+  pg_pwd_userprofile:
+    file: ./docker/secrets/pg_pwd_userprofile
+
+# NY Travel Hub API - local external API used by search services
+services:
+  ny_travel_hub:
+    build:
+      context: ./NY-travel-hub
+    image: travel-ny-hub:latest
+    container_name: ny_travel_hub
+    ports:
+      - "3000:3000"
+    networks:
+      postgres_network:
+        aliases:
+          - db
+    environment:
+      - NODE_ENV=production
+
+# Search services (stateless, no DB) - can be started independently
+  hotelsearch:
+    build: 
+      context: ./hotelsearch
+      dockerfile: ../Dockerfile
+    image: travel-hotelsearch:latest
+    container_name: hotelsearch
+    ports:
+      - "18084:18084"
+    networks:
+      postgres_network:
+        aliases:
+          - db
+    env_file:
+      - .env
+    environment:
+      PORT: 18084
+      EXTERNAL_HOTEL_SEARCH_URL: "${HOTEL_SEARCH_PROVIDER_URL}"
+    depends_on:
+      - ny_travel_hub
+
+  flightsearch:
+    build:
+      context: ./flightsearch
+      dockerfile: ../Dockerfile
+    image: travel-flightsearch:latest
+    container_name: flightsearch
+    ports:
+      - "18084:18084"
+    networks:
+      postgres_network:
+        aliases:
+          - db
+    env_file:
+      - .env
+    environment:
+      PORT: 18084
+      EXTERNAL_FLIGHT_SEARCH_URL: "${FLIGHT_SEARCH_PROVIDER_URL}"
+    depends_on:
+      - ny_travel_hub
+
+  experience_search:
+    build:
+      context: ./experience_search
+      dockerfile: ../Dockerfile
+    image: travel-experience-search:latest
+    container_name: experience_search
+    ports:
+      - "18102:18102"
+    networks:
+      postgres_network:
+        aliases:
+          - db
+    env_file:
+      - .env
+    environment:
+      PORT: 18102
+      EXTERNAL_EXPERIENCE_SEARCH_URL: "${EXPERIENCE_SEARCH_PROVIDER_URL}"
+    depends_on:
+      - ny_travel_hub
+
+  carhire_search:
+    build:
+      context: ./carhire_search
+      dockerfile: ../Dockerfile
+    image: travel-carhire-search:latest
+    container_name: carhire_search
+    ports:
+      - "18100:18100"
+    networks:
+      postgres_network:
+        aliases:
+          - db
+    env_file:
+      - .env
+    environment:
+      PORT: 18100
+      EXTERNAL_CARHIRE_SEARCH_URL: "${CARHIRE_SEARCH_PROVIDER_URL}"
+    depends_on:
+      - ny_travel_hub
+
+# Stateful services + DBs (each service has its own Postgres)
+# pattern: service uses secret-mounted jwt_key and postgres password file
+  trip_management_db:
+    image: postgres:14
+    container_name: pg_trip_management
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: trips
+    volumes:
+      - pg_trip_management_data:/var/lib/postgresql/data
+    secrets:
+      - pg_pwd_trip_management
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d trip_management_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  trip_management:
+    build: 
+      context: ./trip_management
+      dockerfile: ../Dockerfile
+    image: travel-trip-management:latest
+    container_name: trip_management
+    ports:
+      - "18087:18087"
+    networks:
+      - internal
+      - public
+    depends_on:
+      trip_management_db:
+        condition: service_healthy
+    environment:
+      PORT: 18087
+      SPRING_PROFILES_ACTIVE: "prod"
+      DB_URL: "jdbc:postgresql://trip_management_db:5432/trips"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      JWT_KEY: "${JWT_KEY}"
+      JWT_EXPIRE: "${JWT_EXPIRE}"
+   
+  hotel_tracking_db:
+    image: postgres:14
+    container_name: pg_hotel_tracking
+    environment:
+      POSTGRES_DB: hotel_tracking
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - pg_hotel_tracking_data:/var/lib/postgresql/data
+    secrets:
+      - pg_pwd_hotel_tracking
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d hotel_tracking_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  hotel_tracking:
+    build: 
+      context: ./hotel_tracking
+      dockerfile: ../Dockerfile
+    image: travel-hotel-tracking:latest
+    container_name: hotel_tracking
+    ports:
+      - "18083:18083"
+    networks:
+      - internal
+      - public
+    depends_on:
+      hotel_tracking_db:
+        condition: service_healthy
+    environment:
+      PORT: 18083
+      SPRING_PROFILES_ACTIVE: "prod"
+      DB_URL: "jdbc:postgresql://hotel_tracking_db:5432/hotel_tracking"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      TRIP_SERVICE_URL: "${TRIP_SERVICE_URL}"
+      EXPENSE_SERVICE_URL: "${EXPENSE_SERVICE_URL}"
+      JWT_KEY: "${JWT_KEY}"
+      JWT_EXPIRE: "${JWT_EXPIRE}"
+   
+  flight_tracking_db:
+    image: postgres:14
+    container_name: pg_flight_tracking
+    environment:
+      POSTGRES_DB: flight_tracking
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - pg_flight_tracking_data:/var/lib/postgresql/data
+    secrets:
+      - pg_pwd_flight_tracking
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d flight_tracking_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  flight_tracking:
+    build: 
+      context: ./flight_tracking
+      dockerfile: ../Dockerfile
+    image: travel-flight-tracking:latest
+    container_name: flight_tracking
+    ports:
+      - "18082:18082"
+    networks:
+      - internal
+      - public
+    depends_on:
+      flight_tracking_db:
+        condition: service_healthy
+    environment:
+      PORT: 18082
+      SPRING_PROFILES_ACTIVE: "prod"
+      DB_URL: "jdbc:postgresql://flight_tracking_db:5432/flight_tracking"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      TRIP_SERVICE_URL: "${TRIP_SERVICE_URL}"
+      EXPENSE_SERVICE_URL: "${EXPENSE_SERVICE_URL}"
+      JWT_KEY: "${JWT_KEY}"
+      JWT_EXPIRE: "${JWT_EXPIRE}"
+   
+  experience_tracking_db:
+    image: postgres:14
+    container_name: pg_experience_tracking
+    environment:
+      POSTGRES_DB: experience_tracking
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - pg_experience_tracking_data:/var/lib/postgresql/data
+    secrets:
+      - pg_pwd_experience_tracking
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d experience_tracking_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  experience_tracking:
+    build: 
+      context: ./experience_tracking
+      dockerfile: ../Dockerfile
+    image: travel-experience-tracking:latest
+    container_name: experience_tracking
+    ports:
+      - "18103:18103"
+    networks:
+      - internal
+      - public
+    depends_on:
+      experience_tracking_db:
+        condition: service_healthy
+    environment:
+      PORT: 18103
+      SPRING_PROFILES_ACTIVE: "prod"
+      DB_URL: "jdbc:postgresql://experience_tracking_db:5432/experience_tracking"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      TRIP_SERVICE_URL: "${TRIP_SERVICE_URL}"
+      EXPENSE_SERVICE_URL: "${EXPENSE_SERVICE_URL}"
+      JWT_KEY: "${JWT_KEY}"
+      JWT_EXPIRE: "${JWT_EXPIRE}"
+  
+  carhire_tracking_db:
+    image: postgres:14
+    container_name: pg_carhire_tracking
+    environment:
+      POSTGRES_DB: carhire_tracking
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - pg_carhire_tracking_data:/var/lib/postgresql/data
+    secrets:
+      - pg_pwd_carhire_tracking
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d carhire_tracking_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  carhire_tracking:
+    build: 
+      context: ./carhire_tracking
+      dockerfile: ../Dockerfile
+    image: travel-carhire-tracking:latest
+    container_name: carhire_tracking
+    ports:
+      - "18101:18101"
+    networks:
+      - internal
+      - public
+    depends_on:
+      carhire_tracking_db:
+        condition: service_healthy
+    environment:
+      PORT: 18101
+      SPRING_PROFILES_ACTIVE: "prod"
+      DB_URL: "jdbc:postgresql://carhire_tracking_db:5432/carhire_tracking"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      TRIP_SERVICE_URL: "${TRIP_SERVICE_URL}"
+      EXPENSE_SERVICE_URL: "${EXPENSE_SERVICE_URL}"
+      JWT_KEY: "${JWT_KEY}"
+      JWT_EXPIRE: "${JWT_EXPIRE}"
+
+  expense_management_db:
+    image: postgres:14
+    container_name: pg_expense_management
+    environment:
+      POSTGRES_DB: expense_management
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - pg_expense_management_data:/var/lib/postgresql/data
+    secrets:
+      - pg_pwd_expense_management
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d expense_management_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  expense_management:
+    build: 
+      context: ./expense_management
+      dockerfile: ../Dockerfile
+    image: travel-expense-management:latest
+    container_name: expense_management
+    ports:
+      - "18086:18086"
+    networks:
+      - internal
+      - public
+    depends_on:
+      expense_management_db:
+        condition: service_healthy
+    environment:
+      PORT: 18086
+      SPRING_PROFILES_ACTIVE: "prod"
+      DB_URL: "jdbc:postgresql://expense_management_db:5432/expense_management"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      JWT_KEY: "${JWT_KEY}"
+      JWT_EXPIRE: "${JWT_EXPIRE}"
+   
+  userprofile_db:
+    image: postgres:14
+    container_name: pg_userprofile
+    environment:
+      POSTGRES_DB: userprofile
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - pg_userprofile_data:/var/lib/postgresql/data
+    secrets:
+      - pg_pwd_userprofile
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d userprofile_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  userprofile:
+    build: 
+      context: ./userprofile
+      dockerfile: ../Dockerfile
+    image: travel-userprofile:latest
+    container_name: userprofile
+    ports:
+      - "18081:18081"
+    networks:
+      - internal
+      - public
+    depends_on:
+      - userprofile_db
+      - trip_management
+      - expense_management
+    env_file:
+      - .env
+    environment:
+      PORT: 18081
+      TRIP_SERVICE_URL: "${TRIP_SERVICE_URL}"
+      EXPENSE_SERVICE_URL: "${EXPENSE_SERVICE_URL}"
+      SPRING_PROFILES_ACTIVE: "prod"
+      DB_URL: "jdbc:postgresql://userprofile_db:5432/userprofile"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      JWT_KEY: "${JWT_KEY}"
+      JWT_EXPIRE: "${JWT_EXPIRE}"

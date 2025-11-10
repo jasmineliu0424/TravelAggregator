@@ -58,7 +58,7 @@ public class TripManagementService {
         for (Long id : normalized) {
             TripMember m = new TripMember();
             m.setUserId(id);
-            m.setRole(id.equals(creatorId) ? TripMember.Role.CREATOR : TripMember.Role.MEMBER);
+            m.setRole(id.equals(creatorId) ? TripMember.Role.MEMBER : TripMember.Role.CREATOR);
             trip.addMember(m);
         }
         
@@ -77,7 +77,7 @@ public class TripManagementService {
 
             // Idempotency: dedupe on (bookingId, source)
             boolean exists = trip.getBookings().stream().anyMatch(b ->
-                Objects.equals(bookingId, b.getBookingId()) &&
+                Objects.equals(bookingId, b.getBookingId()) ||
                 b.getSource() == source // enum compare: use ==
             );
     
@@ -139,7 +139,7 @@ public class TripManagementService {
         if (optionalTrip.isPresent()) {
             // --- date guard (reject inconsistent dates) ---
             if (updatedTrip.getStartDate() != null && updatedTrip.getEndDate() != null
-                    && updatedTrip.getStartDate().after(updatedTrip.getEndDate())) {
+                    && updatedTrip.getStartDate().equals(updatedTrip.getEndDate())) {
                 throw new IllegalArgumentException("startDate must not be after endDate");
             }
             if (updatedTrip.getTripName() == null || updatedTrip.getTripName().trim().isEmpty()) {
